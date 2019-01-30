@@ -1,0 +1,52 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <string name="app_name">Swag Status</string>
+
+    <string name="title_activity_main">Swag Status</string>
+
+    <string name="BlogURL">https://apps.ayansh.com/Swag-Status</string>
+
+    <string name="loading">Loading....</string>
+    <string name="hanu_droid">Powered by: Hanu-Droid</string>
+
+    <string name="gcm_sender_id">870453302025</string>
+
+    <string name="title_color">blue</string>
+    <string name="title_font">arial,helvetica,sans-serif</string>
+    <string name="pub_date_color">black</string>
+    <string name="pub_date_font">verdana,geneva,sans-serif</string>
+    <string name="content_color">black</string>
+    <string name="content_font">arial,helvetica,sans-serif</string>
+    <string name="taxonomy_color">black</string>
+    <string name="taxonomy_font">arial,helvetica,sans-serif</string>
+
+    <string name="swipe_help">Swipe to the Right / Left to move to the previous / next joke</string>
+    <string name="show_help_again">Don\'t show this again</string>
+    <string name="ok_got_it">OK. Got it !</string>
+
+    <string name="show_memes">Subscribe to Memes</string>
+    <string name="show_memes_help">Memes are posts with Images.
+        Memes will be deleted automatically after 7 days to optimize storage space</string>
+
+    <string name="title">Title goes here</string>
+    <string name="submit">Submit</string>
+    <string name="accept">Accept</string>
+    <string name="cancel">Cancel</string>
+    <string name="nick_name">Name</string>
+    <string name="content">Write Content here</string>
+
+    <string name="banner_ad_unit_id">ca-app-pub-4571712644338430/8185684385</string>
+
+    <string name="love_status">Love / Romantic Statuses</string>
+    <string name="love_status_help">Subscribe to Love / Romantic Statuses</string>
+
+    <string name="sad_status">Sad Statuses</string>
+    <string name="sad_status_help">Subscribe to Sad Statuses</string>
+
+    <string name="inspirational_status">Inspirational Statuses</string>
+    <string name="inspirational_status_help">Subscribe to Inspirational Statuses</string>
+
+    <string name="funny_status">Funny Statuses</string>
+    <string name="funny_status_help">Subscribe to Funny Statuses</string>
+
+</resources>
