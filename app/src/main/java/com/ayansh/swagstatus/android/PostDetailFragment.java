@@ -3,43 +3,39 @@ package com.ayansh.swagstatus.android;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.graphics.Color;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.ShareCompat;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
-import android.webkit.JavascriptInterface;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.ayansh.hanudroid.Application;
 import com.ayansh.hanudroid.HanuFragmentInterface;
-import com.ayansh.hanudroid.HanuGestureAnalyzer;
-import com.ayansh.hanudroid.HanuGestureListener;
 import com.ayansh.hanudroid.Post;
-import com.bumptech.glide.Glide;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.Random;
 
 
-public class PostDetailFragment extends Fragment implements HanuFragmentInterface, HanuGestureListener {
+public class PostDetailFragment extends Fragment implements HanuFragmentInterface, View.OnClickListener {
 
 	private Post post;
-	private WebView wv;
-	private ImageView iv;
 	private Callbacks activity = sDummyCallbacks;
 	private int position;
 	private Application app;
-	
+	private int postIndex;
+
 	public interface Callbacks {
 		public void loadPostsByCategory(String taxonomy, String name);
 		public boolean isDualPane();
@@ -71,47 +67,160 @@ public class PostDetailFragment extends Fragment implements HanuFragmentInterfac
 		
 		if(getArguments() != null){
 			if (getArguments().containsKey("PostIndex")) {
-				int index = getArguments().getInt("PostIndex");
-	        	if(index >= app.getPostList().size()){
-	        		index = app.getPostList().size() - 1;
+				postIndex = getArguments().getInt("PostIndex");
+	        	if(postIndex >= app.getPostList().size()){
+					postIndex = app.getPostList().size() - 1;
 	        	}
-	            post = app.getPostList().get(index);
+	            post = app.getPostList().get(postIndex);
 	        }
 		}
 	}
 	
-	@SuppressLint("SetJavaScriptEnabled")
 	@Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
 
 		View rootView = inflater.inflate(R.layout.post_detail, container, false);
-		
-		wv = (WebView) rootView.findViewById(R.id.webview);
-		iv = (ImageView) rootView.findViewById(R.id.image_view);
-		
-		WebSettings webSettings = wv.getSettings();
-		webSettings.setJavaScriptEnabled(true);
-		wv.addJavascriptInterface(new PostJavaScriptInterface(), "Main");
-		wv.setBackgroundColor(Color.TRANSPARENT);
-		
-		// Fling handling
-		if(!activity.isDualPane()){
-			
-			final GestureDetector detector = new GestureDetector(getActivity().getApplicationContext(), new HanuGestureAnalyzer(this));
-			wv.setOnTouchListener(new OnTouchListener() {
-				public boolean onTouch(View view, MotionEvent e) {
-					detector.onTouchEvent(e);
-					return false;
-				}
-			});
+
+		if(post == null){
+			return rootView;
 		}
-		
-		showPost();
-		
+
+		Random r = new Random();
+		int randomNo = r.nextInt(3);
+
+        RelativeLayout rLL = rootView.findViewById(R.id.ll);
+
+		switch (randomNo){
+			case 0:
+                rLL.setBackgroundResource(R.color.colorAccent);
+				break;
+
+			case 1:
+                rLL.setBackgroundResource(R.color.colorPrimary);
+				break;
+
+			case 2:
+                rLL.setBackgroundResource(R.color.translucent_black);
+				break;
+
+            default:
+                rLL.setBackgroundResource(R.color.colorAccent);
+                break;
+		}
+
+		TextView tv_post_title = rootView.findViewById(R.id.post_title);
+		tv_post_title.setText(post.getTitle());
+
+		TextView tv_post_content = rootView.findViewById(R.id.post_content);
+		ImageView imageView = rootView.findViewById(R.id.image_view);
+
+		boolean isMeme = post.hasCategory("Meme");
+		if(isMeme){
+
+			tv_post_content.setVisibility(View.GONE);
+			imageView.setVisibility(View.VISIBLE);
+
+			File image_folder = new File(app.getFilesDirectory(),String.valueOf(post.getId()));
+			File[] file_list = image_folder.listFiles();
+			File image_file = file_list[0];
+			Uri uri = FileProvider.getUriForFile(getActivity(), getActivity().getPackageName(), image_file);
+			imageView.setImageURI(uri);
+		}
+		else{
+			imageView.setVisibility(View.GONE);
+			tv_post_content.setVisibility(View.VISIBLE);
+
+			tv_post_content.setText(post.getContent(true));
+		}
+
+		TextView tv_post_meta = rootView.findViewById(R.id.post_meta);
+		tv_post_meta.setText(getMetaText());
+
+		ImageButton waShare = rootView.findViewById(R.id.WAShare);
+		waShare.setOnClickListener(this);
+
+		ImageButton Share = rootView.findViewById(R.id.Share);
+		Share.setOnClickListener(this);
+
+		ImageButton postRate = rootView.findViewById(R.id.Rate);
+		postRate.setOnClickListener(this);
+
 		return rootView;
 	}
-	
+
+	@Override
+	public void onClick(View v) {
+
+		switch (v.getId()){
+			case R.id.WAShare:
+				shareContent("WhatsApp");
+				break;
+
+			case R.id.Share:
+				shareContent("Normal");
+				break;
+
+			case R.id.Rate:
+				Intent rate = new Intent(getActivity(), PostRating.class);
+				rate.putExtra("PostIndex", postIndex);
+				startActivity(rate);
+				break;
+		}
+	}
+
+	private void shareContent(String sharingApp){
+
+		try{
+
+			boolean isMeme = post.hasCategory("Meme");
+			if(isMeme){
+				File image_folder = new File(app.getFilesDirectory(),String.valueOf(post.getId()));
+				File[] file_list = image_folder.listFiles();
+				File image_file = file_list[0];
+
+				Uri uri = FileProvider.getUriForFile(getActivity(), getActivity().getPackageName(), image_file);
+				Intent intent = ShareCompat.IntentBuilder.from(getActivity())
+						.setStream(uri) // uri from FileProvider
+						.setType("text/html")
+						.getIntent()
+						.setAction(Intent.ACTION_SEND) //Change if needed
+						.setDataAndType(uri, "image/*")
+						.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+				if(sharingApp.contentEquals("WhatsApp")){
+					intent.setPackage("com.whatsapp");
+				}
+
+				startActivity(Intent.createChooser(intent, "Share with..."));
+			}
+			else{
+				String post_content = "\uD83E\uDD18  \uD83D\uDC4A  \uD83D\uDE0E  \uD83D\uDE0E  \uD83D\uDC4A  \uD83E\uDD18 \n\n";
+				post_content += post.getContent(true);
+				post_content += "\n\n \uD83D\uDC49 https://ayansh.com/ss \uD83D\uDC48";
+				Intent send = new Intent(Intent.ACTION_SEND);
+				send.setType("text/plain");
+				send.putExtra(Intent.EXTRA_SUBJECT, post.getTitle());
+				send.putExtra(Intent.EXTRA_TEXT, post_content);
+
+				if(sharingApp.contentEquals("WhatsApp")){
+					send.setPackage("com.whatsapp");
+				}
+
+				startActivity(Intent.createChooser(send, "Share with..."));
+			}
+
+			Bundle bundle = new Bundle();
+			bundle.putString(FirebaseAnalytics.Param.ITEM_ID, post.getTitle());
+			bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "post_share");
+			app.getFirebaseAnalytics().logEvent(FirebaseAnalytics.Event.SHARE, bundle);
+
+		}catch(Exception e){
+			Log.e(Application.TAG, e.getMessage(), e);
+		}
+
+	}
+
 	@Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -139,177 +248,21 @@ public class PostDetailFragment extends Fragment implements HanuFragmentInterfac
 		return position;
 	}
 
-	private void showPost() {
-
-		if(post == null){
-			wv.setVisibility(View.GONE);
-			return;
-		}
-
-		boolean isMeme = post.hasCategory("Meme");
-		if(isMeme){
-
-			try{
-				File image_folder = new File(app.getFilesDirectory(),String.valueOf(post.getId()));
-				File[] file_list = image_folder.listFiles();
-				File image_file = file_list[0];
-				wv.setVisibility(View.GONE);
-				//iv.setImageURI(image_uri);
-				Glide.with(this).load(image_file).into(iv);
-
-			}
-			catch(Exception e){
-
-				iv.setVisibility(View.GONE);
-				String html = getHTMLCode(post);
-				wv.loadDataWithBaseURL("fake://not/needed", html, "text/html", "UTF-8", "");
-
-			}
-
-		}
-		else{
-
-			iv.setVisibility(View.GONE);
-			String html = getHTMLCode(post);
-			wv.loadDataWithBaseURL("fake://not/needed", html, "text/html", "UTF-8", "");
-		}
-		
-	}
-
-	static String getHTMLCode(Post post) {
+	private CharSequence getMetaText() {
 
 		SimpleDateFormat df = new SimpleDateFormat();
 
-		// Create HTML Code.
-		String html = "<html>" +
-				
-				// HTML HEAD
-				"<head>" +
-				
-				// Java Script
-				"<script type=\"text/javascript\">" +
-				"function loadPosts(taxonomy,name){Main.loadPosts(taxonomy,name);}" +
-				"</script>" +
-
-				// CSS
-				"<style>" +
-				"h3 {color:blue;font-family:arial,helvetica,sans-serif;}" +
-				"#pub_date {color:black;font-family:verdana,geneva,sans-serif;font-size:14px;}" +
-				"#content {color:black;font-family:arial,helvetica,sans-serif; font-size:18px;}" +
-				".taxonomy {color:black;font-family:arial,helvetica,sans-serif; font-size:14px;}" +
-				"#comments {color:black;font-family:arial,helvetica,sans-serif; font-size:16px;}" +
-				"#ratings {color:black; font-family:verdana,geneva,sans-serif; font-size:14px;}" +
-				"#footer {color:#0000ff; font-family:verdana,geneva,sans-serif; font-size:14px;}"+
-				"</style>" +
-				
-				"</head>" +
-				
-				// HTML Body
-				"<body>" +
-				
-				// Heading
-				"<h3>" + post.getTitle() + "</h3>" +
-
-				// Pub Date
-				"<div id=\"pub_date\">" + df.format(post.getPublishDate()) + "</div>" +
-				"<hr />" +
-
-				// Content
-				"<div id=\"content\">" + post.getContent(false) + "</div>" +
-				"<hr />" +
-
-				// Author
-				"<div class=\"taxonomy\">" +
-				"by <a href=\"javascript:loadPosts('author','" + post.getAuthor() + "')\">" + post.getAuthor() + "</a>" +
-				"</div>";
-
-		ListIterator<String> iterator = post.getCategories().listIterator();
-		String name;
-		if (post.getCategories().size() > 0) {
-
-			html = html + "<br /><div class=\"taxonomy\">" + " in Category: ";
-
-			while (iterator.hasNext()) {
-
-				name = iterator.next();
-				html = html + "<a href=\"javascript:loadPosts('category','" + name + "')\">" + name + "</a>, ";
-			}
-
-			html = html + "</div>";
-		}
+		String metaText = "Published On: " + df.format(post.getPublishDate());
 
 		// Ratings
 		if (post.getMetaData().size() > 0
 				&& !post.getMetaData().get("ratings_users").contentEquals("0")) {
-			// We have some ratings !
-			html = html + "<div id=\"ratings\">" + "<br>Rating: "
-					+ String.format("%.2g%n", Float.valueOf(post.getMetaData().get("ratings_average")))
-					+ " / 5 (by " + post.getMetaData().get("ratings_users") + " users)";
 
-			html = html + "</div>";
+			metaText += "\n" + "Rating: "
+					+ String.format("%.2g", Float.valueOf(post.getMetaData().get("ratings_average")))
+					+ "/5 (by " + post.getMetaData().get("ratings_users") + " users)";
 		}
 
-		// Footer
-		html = html + "<br /><hr />" + "<div id=\"footer\">"
-				+ "Powered by <a href=\"http://hanu-droid.varunverma.org\">Hanu-Droid framework</a>"
-				+ "</div>" +
-
-				"</body>" +
-				"</html>";
-		
-		return html;
-	}
-
-	@Override
-	public void swipeLeft() {
-		// Show Next
-		if (position == app.getPostList().size() - 1) {
-			position = 0;
-		} else {
-			position++;
-		}
-		
-		try{
-			post = app.getPostList().get(position);
-			showPost();
-		}catch(Exception e){
-			Log.e(Application.TAG, e.getMessage(), e);
-		}
-		
-	}
-
-	@Override
-	public void swipeRight() {
-		// Show Previous
-		if(position == 0){
-			position = app.getPostList().size() - 1;
-		}
-		else{
-			position--;
-		}
-		
-		try{
-			post = app.getPostList().get(position);
-			showPost();
-		}catch(Exception e){
-			Log.e(Application.TAG, e.getMessage(), e);
-		}
-	}
-
-	@Override
-	public void swipeUp() {
-		//Nothing to do
-	}
-	
-	@Override
-	public void swipeDown() {
-		//Nothing to do		
-	}
-
-	class PostJavaScriptInterface{
-		@JavascriptInterface
-		public void loadPosts(String t, String n){
-			activity.loadPostsByCategory(t, n);
-		}		
+		return metaText;
 	}
 }

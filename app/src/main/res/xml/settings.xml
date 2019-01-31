@@ -14,12 +14,6 @@
         android:defaultValue="true" />
 
     <CheckBoxPreference
-        android:key="show_memes"
-        android:title="@string/show_memes"
-        android:summary="@string/show_memes_help"
-        android:defaultValue="true" />
-
-    <CheckBoxPreference
         android:key="inspirational_status"
         android:title="@string/inspirational_status"
         android:summary="@string/inspirational_status_help"
@@ -29,6 +23,18 @@
         android:key="funny_status"
         android:title="@string/funny_status"
         android:summary="@string/funny_status_help"
+        android:defaultValue="true" />
+
+    <CheckBoxPreference
+        android:key="english"
+        android:title="@string/english"
+        android:summary="@string/english_help"
+        android:defaultValue="true" />
+
+    <CheckBoxPreference
+        android:key="show_memes"
+        android:title="@string/show_memes"
+        android:summary="@string/show_memes_help"
         android:defaultValue="true" />
 
 </PreferenceScreen>

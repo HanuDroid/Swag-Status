@@ -49,4 +49,7 @@
     <string name="funny_status">Funny Statuses</string>
     <string name="funny_status_help">Subscribe to Funny Statuses</string>
 
+    <string name="english">Statuses in English</string>
+    <string name="english_help">Subscribe to Statuses in English Language</string>
+
 </resources>

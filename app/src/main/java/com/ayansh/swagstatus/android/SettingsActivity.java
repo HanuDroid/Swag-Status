@@ -117,6 +117,19 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
 
         }
 
+        if(key.contentEquals("english")){
+
+            preference_value = sharedPref.getBoolean("english",true);
+
+            if(preference_value){
+                app.addSyncCategory("English");
+            }
+            else{
+                app.removeSyncCategory("English");
+            }
+
+        }
+
     }
 
     public static class MyPreferenceFragment extends PreferenceFragment {

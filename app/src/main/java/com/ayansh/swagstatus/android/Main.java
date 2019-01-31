@@ -160,6 +160,10 @@ public class Main extends AppCompatActivity implements PostListFragment.Callback
             // Create view Pager
             viewPager = (ViewPager) findViewById(R.id.post_pager);
 
+            viewPager.setClipToPadding(false);
+            viewPager.setPadding(80,0,80,0);
+            viewPager.setPageMargin(0);
+
             pagerAdapter = new PostPagerAdapter(getSupportFragmentManager(),app.getPostList().size());
             viewPager.setAdapter(pagerAdapter);
         }
@@ -218,14 +222,6 @@ public class Main extends AppCompatActivity implements PostListFragment.Callback
                 Main.this.startActivity(rate);
                 break;
 
-            case R.id.Share:
-                shareContent("Normal");
-                break;
-
-            case R.id.WAShare:
-                shareContent("WhatsApp");
-                break;
-
             case R.id.Upload:
                 Intent upload = new Intent(Main.this, CreateNewPost.class);
                 Main.this.startActivity(upload);
@@ -234,68 +230,6 @@ public class Main extends AppCompatActivity implements PostListFragment.Callback
         }
 
         return true;
-    }
-
-    private void shareContent(String sharingApp){
-
-        int id;
-
-        try{
-            if(dualPane){
-                id = fragmentUI.getSelectedItem();
-            }
-            else{
-                id = viewPager.getCurrentItem();
-            }
-            Post post = app.getPostList().get(id);
-
-            boolean isMeme = post.hasCategory("Meme");
-            if(isMeme){
-                File image_folder = new File(app.getFilesDirectory(),String.valueOf(post.getId()));
-                File[] file_list = image_folder.listFiles();
-                File image_file = file_list[0];
-
-                Uri uri = FileProvider.getUriForFile(this, getPackageName(), image_file);
-                Intent intent = ShareCompat.IntentBuilder.from(this)
-                        .setStream(uri) // uri from FileProvider
-                        .setType("text/html")
-                        .getIntent()
-                        .setAction(Intent.ACTION_SEND) //Change if needed
-                        .setDataAndType(uri, "image/*")
-                        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-                if(sharingApp.contentEquals("WhatsApp")){
-                    intent.setPackage("com.whatsapp");
-                }
-
-                startActivity(Intent.createChooser(intent, "Share with..."));
-            }
-            else{
-                String post_content = "\uD83E\uDD18  \uD83D\uDC4A  \uD83D\uDE0E  \uD83D\uDE0E  \uD83D\uDC4A  \uD83E\uDD18 \n\n";
-                post_content += post.getContent(true);
-                post_content += "\n\n \uD83D\uDC49 https://ayansh.com/ss \uD83D\uDC48";
-                Intent send = new Intent(Intent.ACTION_SEND);
-                send.setType("text/plain");
-                send.putExtra(Intent.EXTRA_SUBJECT, post.getTitle());
-                send.putExtra(Intent.EXTRA_TEXT, post_content);
-
-                if(sharingApp.contentEquals("WhatsApp")){
-                    send.setPackage("com.whatsapp");
-                }
-
-                startActivity(Intent.createChooser(send, "Share with..."));
-            }
-
-            Bundle bundle = new Bundle();
-            bundle.putString(FirebaseAnalytics.Param.ITEM_ID, post.getTitle());
-            bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "post_share");
-            app.getFirebaseAnalytics().logEvent(FirebaseAnalytics.Event.SHARE, bundle);
-
-        }catch(Exception e){
-            Log.e(Application.TAG, e.getMessage(), e);
-            finish();
-        }
-
     }
 
     @Override
