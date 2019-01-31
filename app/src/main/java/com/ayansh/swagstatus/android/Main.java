@@ -271,8 +271,8 @@ public class Main extends AppCompatActivity implements PostListFragment.Callback
                 startActivity(Intent.createChooser(intent, "Share with..."));
             }
             else{
-                String post_content = "\uD83E\uDD18  \uD83D\uDC4A  \uD83D\uDE0E  \uD83D\uDE0E  \uD83D\uDC4A  \uD83E\uDD18";
-                post_content = "\n\n" + post_content + post.getContent(true);
+                String post_content = "\uD83E\uDD18  \uD83D\uDC4A  \uD83D\uDE0E  \uD83D\uDE0E  \uD83D\uDC4A  \uD83E\uDD18 \n\n";
+                post_content += post.getContent(true);
                 post_content += "\n\n \uD83D\uDC49 https://ayansh.com/ss \uD83D\uDC48";
                 Intent send = new Intent(Intent.ACTION_SEND);
                 send.setType("text/plain");
