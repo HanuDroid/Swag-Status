@@ -37,6 +37,10 @@
 
     <string name="banner_ad_unit_id">ca-app-pub-4571712644338430/8185684385</string>
 
+    <string name="washare_help">Share on Whats App</string>
+    <string name="share_help">Share Joke</string>
+    <string name="rate_help">Rate this Joke</string>
+
     <string name="love_status">Love / Romantic Statuses</string>
     <string name="love_status_help">Subscribe to Love / Romantic Statuses</string>
 

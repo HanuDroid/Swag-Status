@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.content.FileProvider;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -86,28 +87,9 @@ public class PostDetailFragment extends Fragment implements HanuFragmentInterfac
 			return rootView;
 		}
 
-		Random r = new Random();
-		int randomNo = r.nextInt(3);
-
         RelativeLayout rLL = rootView.findViewById(R.id.ll);
 
-		switch (randomNo){
-			case 0:
-                rLL.setBackgroundResource(R.color.colorAccent);
-				break;
-
-			case 1:
-                rLL.setBackgroundResource(R.color.colorPrimary);
-				break;
-
-			case 2:
-                rLL.setBackgroundResource(R.color.translucent_black);
-				break;
-
-            default:
-                rLL.setBackgroundResource(R.color.colorAccent);
-                break;
-		}
+        setBackgroundColor(rLL);
 
 		TextView tv_post_title = rootView.findViewById(R.id.post_title);
 		tv_post_title.setText(post.getTitle());
@@ -130,8 +112,8 @@ public class PostDetailFragment extends Fragment implements HanuFragmentInterfac
 		else{
 			imageView.setVisibility(View.GONE);
 			tv_post_content.setVisibility(View.VISIBLE);
-
-			tv_post_content.setText(post.getContent(true));
+			tv_post_content.setMovementMethod(new ScrollingMovementMethod());
+			tv_post_content.setText(post.getContent(true) + "\n");
 		}
 
 		TextView tv_post_meta = rootView.findViewById(R.id.post_meta);
@@ -264,5 +246,45 @@ public class PostDetailFragment extends Fragment implements HanuFragmentInterfac
 		}
 
 		return metaText;
+	}
+
+	private void setBackgroundColor(RelativeLayout rLL) {
+
+		Random r = new Random();
+		int randomNo = r.nextInt(7);
+
+		switch (randomNo){
+			case 0:
+				rLL.setBackgroundResource(R.color.colorPurple);
+				break;
+
+			case 1:
+				rLL.setBackgroundResource(R.color.colorIndigo);
+				break;
+
+			case 2:
+				rLL.setBackgroundResource(R.color.colorPrimary);
+				break;
+
+			case 3:
+				rLL.setBackgroundResource(R.color.colorLime);
+				break;
+
+			case 4:
+				rLL.setBackgroundResource(R.color.colorAccent);
+				break;
+
+			case 5:
+				rLL.setBackgroundResource(R.color.colorBrown);
+				break;
+
+			case 6:
+				rLL.setBackgroundResource(R.color.colorGray);
+				break;
+
+			default:
+				rLL.setBackgroundResource(R.color.colorPurple);
+				break;
+		}
 	}
 }
