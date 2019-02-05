@@ -5,12 +5,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.ShareCompat;
-import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,14 +18,10 @@ import android.widget.LinearLayout;
 
 import com.ayansh.hanudroid.Application;
 import com.ayansh.hanudroid.HanuFragmentInterface;
-import com.ayansh.hanudroid.Post;
 import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
-import com.google.firebase.analytics.FirebaseAnalytics;
-
-import java.io.File;
 
 public class Main extends AppCompatActivity implements PostListFragment.Callbacks,
         PostDetailFragment.Callbacks{
@@ -209,16 +202,9 @@ public class Main extends AppCompatActivity implements PostListFragment.Callback
                 Main.this.startActivity(info);
                 break;
 
-            case R.id.Rate:
-                if(dualPane){
-                    id = fragmentUI.getSelectedItem();
-                }
-                else{
-                    id = viewPager.getCurrentItem();
-                }
-                Intent rate = new Intent(Main.this, PostRating.class);
-                rate.putExtra("PostIndex", id);
-                Main.this.startActivity(rate);
+            case R.id.MyApps:
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/developer?id=Ayansh+TechnoSoft+Pvt.+Ltd"));
+                startActivity(browserIntent);
                 break;
 
             case R.id.Upload:
