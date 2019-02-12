@@ -35,11 +35,21 @@
     <string name="nick_name">Name</string>
     <string name="content">Write Content here</string>
 
+    <string name="all_posts">All Posts</string>
+    <string name="my_fav">My Favourites</string>
+    <string name="meme_posts">Image/Meme Posts</string>
+    <string name="preferences">Preferences</string>
+    <string name="help">Help</string>
+    <string name="about">About</string>
+    <string name="eula">Terms and Conditions</string>
+    <string name="myapps">Apps by Ayansh TechnoSoft</string>
+
     <string name="banner_ad_unit_id">ca-app-pub-4571712644338430/8185684385</string>
 
     <string name="washare_help">Share on Whats App</string>
-    <string name="share_help">Share Joke</string>
-    <string name="rate_help">Rate this Joke</string>
+    <string name="share_help">Share Post</string>
+    <string name="rate_help">Rate this Post</string>
+    <string name="fav_help">Mark this as Favourite</string>
 
     <string name="love_status">Love / Romantic Statuses</string>
     <string name="love_status_help">Subscribe to Love / Romantic Statuses</string>

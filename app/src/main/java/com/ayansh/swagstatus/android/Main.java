@@ -3,35 +3,33 @@ package com.ayansh.swagstatus.android;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.ayansh.hanudroid.Application;
-import com.ayansh.hanudroid.HanuFragmentInterface;
 import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 
-public class Main extends AppCompatActivity implements PostListFragment.Callbacks,
-        PostDetailFragment.Callbacks{
+public class Main extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private boolean dualPane;
     private Application app;
-    private HanuFragmentInterface fragmentUI;
     private int postIndex;
     private PostPagerAdapter pagerAdapter;
     private ViewPager viewPager;
+    private DrawerLayout mDrawerLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,25 +39,24 @@ public class Main extends AppCompatActivity implements PostListFragment.Callback
 
         MobileAds.initialize(this, "ca-app-pub-4571712644338430~1101401282");
 
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setCheckedItem(R.id.AllPosts);
+        navigationView.setNavigationItemSelectedListener(this);
+
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+
 
         if(savedInstanceState != null){
             postIndex = savedInstanceState.getInt("PostIndex");
         }
         else{
             postIndex = 0;
-        }
-
-        if (findViewById(R.id.post_list) != null) {
-            dualPane = true;
-        }
-        else{
-            dualPane = false;
-            FrameLayout postDetail = (FrameLayout) findViewById(R.id.post_detail);
-            if(postDetail != null){
-                postDetail.setVisibility(View.GONE);
-            }
         }
 
         // Get Application Instance.
@@ -69,46 +66,8 @@ public class Main extends AppCompatActivity implements PostListFragment.Callback
         // Start the Main Activity
         startMainScreen();
 
-        // Show Swipe Help
-        showSwipeHelp();
-
     }
 
-    private void showSwipeHelp(){
-
-        final LinearLayout swipeHelpLayout = (LinearLayout) findViewById(R.id.swipe_help);
-
-        if(swipeHelpLayout == null){
-            return;
-        }
-
-        String swipeHelp = app.getOptions().get("SwipeHelp");
-
-        if(swipeHelp != null && swipeHelp.contentEquals("Skip")){
-            // Skip the swipe help
-            swipeHelpLayout.setVisibility(View.GONE);
-        }
-        else{
-
-            final CheckBox showHelpAgain = (CheckBox) swipeHelpLayout.findViewById(R.id.show_again);
-
-            Button dismissHelp = (Button) swipeHelpLayout.findViewById(R.id.dismiss_help);
-            dismissHelp.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View view) {
-                    // Hide the swipe help
-                    swipeHelpLayout.setVisibility(View.GONE);
-
-                    if(showHelpAgain.isChecked()){
-                        Application.getApplicationInstance().addParameter("SwipeHelp", "Skip");
-                    }
-                }
-            });
-
-        }
-
-    }
 
     private void startMainScreen() {
 
@@ -133,32 +92,14 @@ public class Main extends AppCompatActivity implements PostListFragment.Callback
         // Load Posts.
         Application.getApplicationInstance().getAllPosts();
 
-        // Create the Fragment.
-        FragmentManager fm = this.getSupportFragmentManager();
-        Fragment fragment;
+        // Create view Pager
+        viewPager = (ViewPager) findViewById(R.id.post_pager);
 
-        if (dualPane) {
-            // Create Post List Fragment
-            fragment = new PostListFragment();
-            Bundle arguments = new Bundle();
-            arguments.putInt("PostIndex", postIndex);
-            //arguments.putBoolean("DualPane", dualPane);
-            //arguments.putBoolean("ShowFirstItem", true);
-            fragment.setArguments(arguments);
-            fm.beginTransaction().replace(R.id.post_list, fragment).commitAllowingStateLoss();
+        viewPager.setClipToPadding(false);
+        viewPager.setPageMargin(-50);
 
-            fragmentUI = (HanuFragmentInterface) fragment;
-
-        } else {
-            // Create view Pager
-            viewPager = (ViewPager) findViewById(R.id.post_pager);
-
-            viewPager.setClipToPadding(false);
-            viewPager.setPageMargin(-50);
-
-            pagerAdapter = new PostPagerAdapter(getSupportFragmentManager(),app.getPostList().size());
-            viewPager.setAdapter(pagerAdapter);
-        }
+        pagerAdapter = new PostPagerAdapter(getSupportFragmentManager(),app.getPostList().size());
+        viewPager.setAdapter(pagerAdapter);
 
     }
 
@@ -172,9 +113,53 @@ public class Main extends AppCompatActivity implements PostListFragment.Callback
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        int id;
-
         switch (item.getItemId()){
+
+            case android.R.id.home:
+                mDrawerLayout.openDrawer(GravityCompat.START);
+                break;
+
+            case R.id.Upload:
+                Intent upload = new Intent(Main.this, CreateNewPost.class);
+                Main.this.startActivity(upload);
+                break;
+
+        }
+
+        return true;
+    }
+
+    @Override
+    protected void onDestroy(){
+        app.close();
+        super.onDestroy();
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+
+        //menuItem.setChecked(true);
+        mDrawerLayout.closeDrawers();
+
+        switch (menuItem.getItemId()){
+
+            case R.id.AllPosts:
+                // Load Posts.
+                Application.getApplicationInstance().getAllPosts();
+                updateUI();
+                break;
+
+            case R.id.MyFavs:
+                // Load Posts.
+                Application.getApplicationInstance().getFavouritePosts();
+                updateUI();
+                break;
+
+            case R.id.MemePosts:
+                // Load Posts.
+                Application.getApplicationInstance().loadPostByCategory("Meme");
+                updateUI();
+                break;
 
             case R.id.Help:
                 Intent help = new Intent(Main.this, DisplayFile.class);
@@ -206,75 +191,22 @@ public class Main extends AppCompatActivity implements PostListFragment.Callback
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/developer?id=Ayansh+TechnoSoft+Pvt.+Ltd"));
                 startActivity(browserIntent);
                 break;
-
-            case R.id.Upload:
-                Intent upload = new Intent(Main.this, CreateNewPost.class);
-                Main.this.startActivity(upload);
-                break;
-
         }
 
         return true;
+
     }
 
-    @Override
-    public void onItemSelected(int id) {
+    private void updateUI(){
 
-        if (dualPane) {
-            Bundle arguments = new Bundle();
-            arguments.putInt("PostIndex", id);
-            PostDetailFragment fragment = new PostDetailFragment();
-            fragment.setArguments(arguments);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.post_detail, fragment)
-                    .commit();
-
+        pagerAdapter.setNewSize(app.getPostList().size());
+        pagerAdapter.notifyDataSetChanged();
+        viewPager.setAdapter(pagerAdapter);
+        if(app.getPostList().size() < 1){
+            // Show warning
+            Toast toast = Toast.makeText(this,"Posts for selected criteria not found",Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER,0,0);
+            toast.show();
         }
-        else{
-            Intent postDetail = new Intent(Main.this, PostDetailActivity.class);
-            postDetail.putExtra("PostIndex", id);
-            Main.this.startActivity(postDetail);
-        }
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if(fragmentUI != null){
-            outState.putInt("PostIndex", fragmentUI.getSelectedItem());
-        }
-    }
-
-    @Override
-    protected void onDestroy(){
-        app.close();
-        super.onDestroy();
-    }
-
-    @Override
-    public void loadPostsByCategory(String taxonomy, String name) {
-
-        if(taxonomy.contentEquals("category")){
-            app.getPostsByCategory(name);
-        }
-        else if(taxonomy.contentEquals("post_tag")){
-            app.getPostsByTag(name);
-        }
-        else if(taxonomy.contentEquals("author")){
-            app.getPostsByAuthor(name);
-        }
-
-        this.runOnUiThread(new Runnable() {
-            public void run(){
-                if(fragmentUI != null) {
-                    fragmentUI.reloadUI();
-                }
-            }
-        });
-    }
-
-    @Override
-    public boolean isDualPane() {
-        return dualPane;
     }
 }

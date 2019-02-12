@@ -36,6 +36,7 @@ public class PostDetailFragment extends Fragment implements HanuFragmentInterfac
 	private int position;
 	private Application app;
 	private int postIndex;
+	private ImageButton postFav;
 
 	public interface Callbacks {
 		public void loadPostsByCategory(String taxonomy, String name);
@@ -128,6 +129,10 @@ public class PostDetailFragment extends Fragment implements HanuFragmentInterfac
 		ImageButton postRate = rootView.findViewById(R.id.Rate);
 		postRate.setOnClickListener(this);
 
+		postFav = rootView.findViewById(R.id.Favourite);
+		setFavoutieIcon();
+		postFav.setOnClickListener(this);
+
 		return rootView;
 	}
 
@@ -147,6 +152,11 @@ public class PostDetailFragment extends Fragment implements HanuFragmentInterfac
 				Intent rate = new Intent(getActivity(), PostRating.class);
 				rate.putExtra("PostIndex", postIndex);
 				startActivity(rate);
+				break;
+
+			case R.id.Favourite:
+				post.toggleFavourite();
+				setFavoutieIcon();
 				break;
 		}
 	}
@@ -203,16 +213,6 @@ public class PostDetailFragment extends Fragment implements HanuFragmentInterfac
 
 	}
 
-	@Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        if (!(activity instanceof Callbacks)) {
-            throw new IllegalStateException("Activity must implement fragment's callbacks.");
-        }
-
-        this.activity = (Callbacks) activity;
-    }
-
     @Override
     public void onDetach() {
         super.onDetach();
@@ -223,6 +223,19 @@ public class PostDetailFragment extends Fragment implements HanuFragmentInterfac
 	public void reloadUI() {
 		// Reloading the UI
 		post = app.getPostList().get(0);	
+	}
+
+	@Override
+	public void setUserVisibleHint(boolean isVisibleToUser) {
+		super.setUserVisibleHint(isVisibleToUser);
+		if (isVisibleToUser) {
+			if(post == null){
+				post = Application.getApplicationInstance().getPostList().get(0);
+			}
+			if(post != null){
+				post.incrementViewCount();
+			}
+		}
 	}
 
 	@Override
@@ -286,5 +299,16 @@ public class PostDetailFragment extends Fragment implements HanuFragmentInterfac
 				rLL.setBackgroundResource(R.color.colorPurple);
 				break;
 		}
+	}
+
+	private void setFavoutieIcon(){
+
+		if(post.isFavourite()){
+			postFav.setImageResource(R.drawable.ic_favorite);
+		}
+		else{
+			postFav.setImageResource(R.drawable.ic_favorite_empty);
+		}
+
 	}
 }
