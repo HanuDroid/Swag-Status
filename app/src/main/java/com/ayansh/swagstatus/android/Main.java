@@ -1,5 +1,7 @@
 package com.ayansh.swagstatus.android;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -132,6 +134,13 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     @Override
     protected void onDestroy(){
         app.close();
+        // Broadcast intent to update widget
+        AppWidgetManager widgetManager = AppWidgetManager.getInstance(getApplicationContext());
+        int[] appWidgetIds = widgetManager.getAppWidgetIds(new ComponentName(this, SSAppWidgetProvider.class));
+
+        Intent brIntent = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        brIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds);
+        sendBroadcast(brIntent);
         super.onDestroy();
     }
 

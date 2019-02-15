@@ -78,19 +78,6 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
 
         }
 
-        if(key.contentEquals("sad_status")){
-
-            preference_value = sharedPref.getBoolean("sad_status",true);
-
-            if(preference_value){
-                app.addSyncCategory("Sad");
-            }
-            else{
-                app.removeSyncCategory("Sad");
-            }
-
-        }
-
         if(key.contentEquals("inspirational_status")){
 
             preference_value = sharedPref.getBoolean("inspirational_status",true);

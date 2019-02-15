@@ -156,7 +156,6 @@ public class SplashScreen extends Activity implements Invoker {
 		app.addSyncCategory("Swag");
 
 		app.addSyncCategory("Love");
-		app.addSyncCategory("Sad");
 		app.addSyncCategory("Meme");
 		app.addSyncCategory("Inspirational");
 		app.addSyncCategory("Funny");

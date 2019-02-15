@@ -8,12 +8,6 @@
         android:defaultValue="true" />
 
     <CheckBoxPreference
-        android:key="sad_status"
-        android:title="@string/sad_status"
-        android:summary="@string/sad_status_help"
-        android:defaultValue="true" />
-
-    <CheckBoxPreference
         android:key="inspirational_status"
         android:title="@string/inspirational_status"
         android:summary="@string/inspirational_status_help"
